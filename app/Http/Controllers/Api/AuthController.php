@@ -28,7 +28,7 @@ class AuthController extends Controller{
        if($request->image){
          $user->image_profile = $request->image;
        }
-       $user->id_rol = 2;
+       $user->id_role = 2;
       //  saver data
        $user->save();
       //  response 

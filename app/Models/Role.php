@@ -10,9 +10,22 @@ class Rol extends Model
 {
     use HasFactory;
 
-    public function Users()
+    protected $fillable = ['name'];
+
+    // public function Users()
+    // {
+    //     // relacion de uno a muchos
+    //     return $this->hasMany(User::class, 'id', 'id_role');
+    // }
+
+    /**
+     * Get all of the comments for the Role
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function users(): HasMany
     {
-        // relacion de uno a muchos
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'id_role', 'id');
     }
+
 }

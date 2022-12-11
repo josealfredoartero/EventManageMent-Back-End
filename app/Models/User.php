@@ -33,8 +33,18 @@ class User extends Authenticatable
         'password',
     ];
 
+    // public function role()
+    // {
+    //     return $this->belongsTo(Role::class, 'id_role', 'id');
+    // }
+
+    /**
+     * Get the user that owns the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function role()
     {
-        return $this->belonsTo(Rol::class);
+        return $this->belongsTo(Role::class, 'id_role', 'id');
     }
 }

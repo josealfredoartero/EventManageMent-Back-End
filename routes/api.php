@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\PublicationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,5 +16,7 @@ Route::group(['middleware' => ['cors']], function() {
         Route::get('profile',[AuthController::class, 'userProfile']);
         // route for Sign off
         Route::post('logout',[AuthController::class, 'logout']);
+
+        Route::resource('publication', PublicationController::class)->only(['index','create','show','update','delete']);
     });
 });
