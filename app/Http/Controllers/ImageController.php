@@ -11,20 +11,6 @@ class ImageController extends Controller
     public function store($images, $id)
     {
         foreach ($images as $image){
-            // // the base64 of the image sent is added to the variable
-            // $file = $image["img"];
-            // // the characters are removed to save it as an image
-            // $imageInfo = explode(";base64,", $file);    
-            // $file = str_replace(' ', '+', $imageInfo[1]);
-            // // original image name
-            // $name = $image["name"];
-            // // numbers to add to the image name to make it unique
-            // $milliseconds = round(microtime(true) * 1000); 
-            // // the numbers created with the original name are joined
-            // $new_name = $milliseconds."_".$name;
-            // //  the image is saved in the project
-            // Storage::disk('images')->put("imgPublication/$new_name", base64_decode($file));
-            // $img_link = url('/')."/imgPublication/$new_name";
             
             $link = ImageController::decodeImg($image);
 
