@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Publication;
 use App\Models\Image;
+use App\Http\Controllers\ImageController;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +17,13 @@ class PublicationController extends Controller
      */
     public function index()
     {
-        $publications = Publication::All();
+
+        $publications = Publication::all();
+
+        foreach($publications as $publication){
+            $publication->images = Image::all()->where('id_publication',$publication->id);
+        }
+        return $publications;
     }
 
     /**
@@ -24,13 +31,14 @@ class PublicationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|min:3|max:50',
+            'title' => 'required',
             'description' => 'required',
             'images' => 'required'
         ]);
+
         $user = auth()->user();
         if($user->id_role = 1){
             $publication = new Publication;
@@ -41,9 +49,9 @@ class PublicationController extends Controller
 
             $publication->save();
 
-            $image = new Image();
+            $image = new ImageController();
 
-            $image->imagesAll($request->images, $publication->id);
+            $image->store($request->images, $publication->id);
 
             return response()->json(['message'=>'the Publication was saved successfully'], Response::HTTP_OK);
 
@@ -60,6 +68,8 @@ class PublicationController extends Controller
      */
     public function show(Publication $publication)
     {
+        $publication->images = Image::where('id_publication', $publication->id)->get();
+        
         return response()->json($publication, Response::HTTP_OK);
     }
 
@@ -72,7 +82,30 @@ class PublicationController extends Controller
      */
     public function update(Request $request, Publication $publication)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+        ]);
+        $user = auth()->user();
+        if($user->id_role === 1){
+            $publication->title = $request->title;
+            $publication->description = $request->description;
+    
+            $image = new ImageController();
+            if($request->images){
+                if($request->images->addImages){
+                    $image->store($request->images->addImages,$publication->id);
+                }
+                if($request->images->deleteImages){
+                    foreach($request->images->deleteImage as $images){
+                        $image->deleteImg($images->id);
+                    }
+                }
+            }
+            $res = $publication->save();
+    
+            return response()->json(['message'=>"publication modified successfully"]);
+        }
     }
 
     /**
@@ -83,7 +116,7 @@ class PublicationController extends Controller
      */
     public function destroy(Publication $publication)
     {
-        $image = new Image();
+        $image = new ImageController();
         $image->destroy($publication->id);
 
         $publication->delete();

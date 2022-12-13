@@ -17,6 +17,6 @@ Route::group(['middleware' => ['cors']], function() {
         // route for Sign off
         Route::post('logout',[AuthController::class, 'logout']);
 
-        Route::resource('publication', PublicationController::class)->only(['index','create','show','update','delete']);
+        Route::resource('publication', PublicationController::class);
     });
 });

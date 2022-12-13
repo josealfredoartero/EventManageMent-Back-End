@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Publication;
+// use App\Models\Publication;
 
 
 class Image extends Model
@@ -21,8 +21,7 @@ class Image extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function publication(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'id_publication', 'id');
+    public function publication(){
+        return $this->belongsTo(Publication::class, 'id_publication');
     }
 }

@@ -50,6 +50,7 @@ return [
             'url' => env('APP_URL').'app/public',
             'visibility' => 'public',
         ],
+        
 
         's3' => [
             'driver' => 's3',
@@ -62,6 +63,7 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
+        
 
     ],
 

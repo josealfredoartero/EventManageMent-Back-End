@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Image;
+// use App\Models\Image;
 
 class Publication extends Model
 {
@@ -20,8 +20,7 @@ class Publication extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function images(): HasMany
-    {
-        return $this->hasMany(Image::class, 'id', 'id_publication');
+    public function images(){
+        return $this->hasMany(Image::class, 'id');
     }
 }
