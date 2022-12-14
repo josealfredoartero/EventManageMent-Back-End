@@ -27,19 +27,12 @@ Route::group(['middleware' => ['cors']], function() {
 
         Route::resource('publication', PublicationController::class);
         Route::get('publication/comments', [PublicationController::class, 'commentsByPublication']);
+
+        Route::resource('events', EventController::class);
     });
 
 
 });
-//
-Route::get('/events', [EventController::class,'index']);
-//
-Route::post('/events', [EventController::class,'store']);
-//
-Route::put('/events/{id}', [EventController::class,'update']);
-//
-Route::delete('/events/{id}', [EventController::class,'destroy']);
-
 
 //
 Route::get('/comments', [CommentController::class,'index']);
