@@ -6,12 +6,17 @@ use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\CommentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Response;
 
 
 Route::group(['middleware' => ['cors']], function() {
-    // routes login and logout
-    Route::post('register', [AuthController::class, 'register']);
+    Route::get('login', function(){
+        return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+    })->name('login');
+
+    // routes login and register
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
     
     // Routes with user authentication middleware for method access
     Route::group(['middleware' => ['auth:sanctum']], function(){
@@ -21,6 +26,7 @@ Route::group(['middleware' => ['cors']], function() {
         Route::post('logout',[AuthController::class, 'logout']);
 
         Route::resource('publication', PublicationController::class);
+        Route::get('publication/comments', [PublicationController::class, 'commentsByPublication']);
     });
 
 

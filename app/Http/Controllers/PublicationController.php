@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Publication;
 use App\Models\Image;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\CommentPublicationController;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -56,7 +57,7 @@ class PublicationController extends Controller
             return response()->json(['message'=>'the Publication was saved successfully'], Response::HTTP_OK);
 
         }else{
-            return response()->json(['message'=>'User Not Authorized'], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -105,6 +106,8 @@ class PublicationController extends Controller
             $res = $publication->save();
     
             return response()->json(['message'=>"publication modified successfully"]);
+        }else{
+            return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
     }
 
@@ -122,5 +125,12 @@ class PublicationController extends Controller
         $publication->delete();
 
         return response()->json(['message'=>'publication deleted successfully'], Response::HTTP_OK);
+    }
+
+    public function commentsByPublication($id)
+    {
+        $comments = CommentPublicationController::comments($id);
+
+        return response()->json($comments, Response::HTTP_OK);
     }
 }
