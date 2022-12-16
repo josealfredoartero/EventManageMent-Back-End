@@ -37,29 +37,31 @@ class CommentController extends Controller
      */
     public function store(Request $request)
     {
+        //Getting user data by token
         $user = auth()->user();
-
+        //Validate if user is logged
         if($user){
-
+            //Validating data
             $request->validate([
                 "description" => 'required',
                 'id_event' => 'required'
             ]);
-
+            //Inserting data
             $comment = new Comment();
             $comment->description = $request->description;
             $comment->id_user = $user->id;
             $comment->id_event = $request->id_event;
-        
+            //Save comment
             $res = $comment->save();
-
+            //Validating if comment has been saved correctly
             if($res){
                 return response()->json(['message' => 'comment saved successfully'], Response::HTTP_OK);
             }else{
-                return response()->json(['message' => 'comment not saved correctly'], Response::HTTP_ERROR);
+                return response()->json(['message' => 'comment has not been saved correctly'], Response::HTTP_ERROR);
             }
         }else{
-            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            //Return if user isn't admin
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED); 
         }
         
     }
@@ -72,6 +74,7 @@ class CommentController extends Controller
      */
     public function count($id)
     {
+        //Count all comments by publication
         $comment = Comment::all()->count();
 
         return $comment;
@@ -85,8 +88,9 @@ class CommentController extends Controller
      */
     public function comments($id)
     {
+        //Comments of an event
         $comment = Comment::all()->where('id_event',$id);
-
+        //Return comments
         return response()->json($comment,Response::HTTP_OK);
     }
 
@@ -99,21 +103,25 @@ class CommentController extends Controller
      */
     public function update(Request $request, $id)
     {
+        //Getting user data by token
         $user = auth()->user();
-
+        //Bringing comments by id
         $comment = Comment::findOrFail($id);
+        //Validate if user is the same who commented
         if($user->id === $comment->id_user){
+            //Inserting data
             $comment->description = $request->description;
-    
+            //Updating comment
             $res = $comment->save();
-            
+            //Validating if comment has been updated correctly
             if($res){
                 return response()->json(['message' => 'comment updated successfully'], Response::HTTP_OK);
             }else{
                 return response()->json(['message' => 'comment not updated correctly'], Response::HTTP_ERROR);
             }
         }else{
-            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            //Return if user isn't authorized
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
         }
     }
     /**
@@ -124,17 +132,21 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
+        //Getting user data by token
         $user = auth()->user();
-        if($user->id === $comment->id_user){
+        //Validate if user is the same who commented or admin
+        if($user->id === $comment->id_user || $user->id === 1){
+            //Delete comment
             $res = $comment->delete();
-
+            //Validate if comment has been deleted correctly
             if($res){
                 return response()->json(['message' => 'comment deleted successfully'], Response::HTTP_OK);
             }else{
                 return response()->json(['message' => 'comment not deleted correctly'], Response::HTTP_ERROR);
             }
         }else{
-            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            //Return if user isn't authorized
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
         }
     }
 }

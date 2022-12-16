@@ -29,7 +29,7 @@ class AuthController extends Controller{
          $user->image_profile = $request->image;
        }
        $user->id_role = 2;
-      //  saver data
+      //  save data
        $user->save();
       //  response 
        return response($user, Response::HTTP_CREATED);

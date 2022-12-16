@@ -13,9 +13,13 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
     public function index()
     {
+        //Query for all events
         $events = Event::All();
+
+        //Return of all events
         return response()->json($events, Response::HTTP_OK);
 
     }
@@ -38,36 +42,43 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
+        //Validating data
         $request->validate([
             'title' => 'required|min:3|max:50',
             'description' => 'required',
             'date' => 'required',
             'image' => 'required'
         ]);
-
+        
+        //Getting user data by token
         $user = auth()->user();
 
+        //Condition if user is admin
         if($user->id_role === 1){
+            //Inseting data for new event
             $event = new Event();
             $event->title = $request->title;
             $event->description = $request->description;
             $event->date = $request->date;
             $event->id_user = $user->id;
-
+            //Instance image controller
             $image = new ImageController();
+            //Save image in the storage and getting link
             $link = $image->decodeImg($request->image);
             
             $event->image = $link;
-
+            //Saving the response "save"
             $res = $event->save();
-
+            //Validating the response
             if($res){
                 return response()->json(['message' => 'the event was saved successfully'],Response::HTTP_OK);
             }else{
                 return response()->json(['message' => 'event not saved correctly'],Response::HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE);
             }
+        
         }else{
-            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            //Returning if user isn't admin
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
         }
 
 
@@ -104,35 +115,43 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
+        //Validating data
         $request->validate([
             'title' => 'required|min:3|max:50',
             'description' => 'required',
             'date' => 'required|date',
         ]);
 
+        //Getting user data by token
         $user = auth()->user();
 
+        //Condition if user is admin
         if($user->id_role === 1 ){
 
+            //Inserting data 
             $event->title = $request->title;
             $event->description = $request->description;
             $event->date = $request->date;
             $event->id_user = $user->id;
+            //Validating if there is an image
             if($request->image){
                 $image = new ImageController();
+                //Delete image from storage
                 $image->deleteEvent($event->image);
-
+                //Save image in storage and getting link
                 $link = $image->decodeImg($request->image);
                 $event->image = $link;
             }
-
+            //Saving the response "save"
             $res = $event->save();
+            //Validating the response
             if($res){
                 return response()->json(['message' => 'the event was updated successfully'],Response::HTTP_OK);
             }else{
                 return response()->json(['message' => 'event not updated correctly'],Response::HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE);
             }
         }else{
+            //Return if user isn't admin
             return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
     }
@@ -145,12 +164,17 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
+        //Getting user by token
         $user = auth()->user();
 
-        if($user->id_role){
+        //Validating if user is admin
+        if($user->id_role === 1){
             $image = new ImageController();
+            //Delete image from storage
             $res = $image->deleteEvent($event->image);
+            //Validating if image was deleted from storage
             if($res){
+                //Delete event
                 $res = $event->delete();
                 if($res){
                     return response()->json(['message'=>'event deleted'], Response::HTTP_OK);
@@ -159,6 +183,7 @@ class EventController extends Controller
                 }
             }
         }else{
+            //Returning if user isn't admin
             return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
     }
