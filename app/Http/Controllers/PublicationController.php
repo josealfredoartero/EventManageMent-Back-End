@@ -24,7 +24,8 @@ class PublicationController extends Controller
         foreach($publications as $publication){
             $publication->images = Image::all()->where('id_publication',$publication->id);
         }
-        return $publications;
+
+        return response()->json($publications,Response::HTTP_OK);
     }
 
     /**
@@ -57,7 +58,7 @@ class PublicationController extends Controller
             return response()->json(['message'=>'the Publication was saved successfully'], Response::HTTP_OK);
 
         }else{
-            return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -87,27 +88,36 @@ class PublicationController extends Controller
             'title' => 'required',
             'description' => 'required',
         ]);
+
         $user = auth()->user();
+
         if($user->id_role === 1){
             $publication->title = $request->title;
             $publication->description = $request->description;
     
             $image = new ImageController();
+
             if($request->images){
-                if($request->images->addImages){
-                    $image->store($request->images->addImages,$publication->id);
+                if($request->images["addImages"] !== []){
+                    $image->store($request->images["addImages"],$publication->id);
                 }
-                if($request->images->deleteImages){
-                    foreach($request->images->deleteImage as $images){
-                        $image->deleteImg($images->id);
+                if($request->images["deleteImages"] !== []){
+                    foreach($request->images["deleteImages"] as $images){
+                        $image->deleteImg($images["id"]);
                     }
                 }
             }
+
             $res = $publication->save();
+
+            if($res){
+                return response()->json(['message'=>"publication modified successfully"],Response::HTTP_OK);
+            }else{
+                return response()->json(['message'=>"publication not modified successfully"],Response::HTTP_ERROR);
+            }
     
-            return response()->json(['message'=>"publication modified successfully"]);
         }else{
-            return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
     }
 
@@ -129,7 +139,9 @@ class PublicationController extends Controller
 
     public function commentsByPublication($id)
     {
-        $comments = CommentPublicationController::comments($id);
+        $comment = new CommentPublicationController();
+
+        $comments = $comment->comments($id);
 
         return response()->json($comments, Response::HTTP_OK);
     }

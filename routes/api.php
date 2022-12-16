@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentPublicationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,25 +21,26 @@ Route::group(['middleware' => ['cors']], function() {
     
     // Routes with user authentication middleware for method access
     Route::group(['middleware' => ['auth:sanctum']], function(){
+        // route for Sign off
+        Route::post('logout',[AuthController::class, 'logout'])->name('logout');
         // route for user profile
         Route::get('profile',[AuthController::class, 'userProfile']);
-        // route for Sign off
-        Route::post('logout',[AuthController::class, 'logout']);
+        // routes for the methods of the controller of Publications
+        Route::resource('publication', PublicationController::class)->only(['store','update','destroy']);
+        
+        Route::resource('events', EventController::class)->only(['store','update','destroy']);
 
-        Route::resource('publication', PublicationController::class);
-        Route::get('publication/comments', [PublicationController::class, 'commentsByPublication']);
+        Route::resource('publication/comment', CommentPublicationController::class)->only(['store','update','destroy']);
+        Route::resource('event/comment', CommentController::class)->only(['store','update','destroy']);
 
-        Route::resource('events', EventController::class);
     });
+    
+    Route::get('publication/comments/{id}', [PublicationController::class, 'commentsByPublication']);
 
+    Route::get('publication', [PublicationController::class, 'index']);
 
+    Route::get('events', [EventController::class, 'index']);
+
+    Route::get('/comments/{id}', [CommentController::class,'count']);
+    Route::get('event/comments/{id}', [CommentController::class,'comments']);
 });
-
-//
-Route::get('/comments', [CommentController::class,'index']);
-//
-Route::post('/comments', [CommentController::class,'store']);
-//
-Route::put('/comments/{id}', [CommentController::class,'update']);
-//
-Route::delete('/comments/{id}', [CommentController::class,'destroy']);

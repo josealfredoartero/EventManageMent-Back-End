@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 class CommentController extends Controller
 {
     /**
@@ -13,8 +15,8 @@ class CommentController extends Controller
      */
     public function index()
     {
-        $comments = Comment::All();
-        return $comments;
+        // $comments = Comment::All();
+        // return $comments;
     }
 
     /**
@@ -35,10 +37,31 @@ class CommentController extends Controller
      */
     public function store(Request $request)
     {
-        $comment = new Comment();
-        $comment->description = $request->description;
+        $user = auth()->user();
+
+        if($user){
+
+            $request->validate([
+                "description" => 'required',
+                'id_event' => 'required'
+            ]);
+
+            $comment = new Comment();
+            $comment->description = $request->description;
+            $comment->id_user = $user->id;
+            $comment->id_event = $request->id_event;
         
-        $comment->save();
+            $res = $comment->save();
+
+            if($res){
+                return response()->json(['message' => 'comment saved successfully'], Response::HTTP_OK);
+            }else{
+                return response()->json(['message' => 'comment not saved correctly'], Response::HTTP_ERROR);
+            }
+        }else{
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+        }
+        
     }
 
     /**
@@ -47,9 +70,11 @@ class CommentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function count($id)
     {
-        //
+        $comment = Comment::all()->count();
+
+        return $comment;
     }
 
     /**
@@ -58,9 +83,11 @@ class CommentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function comments($id)
     {
-        //
+        $comment = Comment::all()->where('id_event',$id);
+
+        return response()->json($comment,Response::HTTP_OK);
     }
 
     /**
@@ -72,11 +99,22 @@ class CommentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $comment = Comment::findOrFail($request->id);
-        $comment->description = $request->description;
+        $user = auth()->user();
 
-        $comment->save();
-        return $comment;
+        $comment = Comment::findOrFail($id);
+        if($user->id === $comment->id_user){
+            $comment->description = $request->description;
+    
+            $res = $comment->save();
+            
+            if($res){
+                return response()->json(['message' => 'comment updated successfully'], Response::HTTP_OK);
+            }else{
+                return response()->json(['message' => 'comment not updated correctly'], Response::HTTP_ERROR);
+            }
+        }else{
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+        }
     }
     /**
      * Remove the specified resource from storage.
@@ -84,9 +122,19 @@ class CommentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Comment $comment)
     {
-        $comment = Comment::destroy($id);
-        return $comment;
+        $user = auth()->user();
+        if($user->id === $comment->id_user){
+            $res = $comment->delete();
+
+            if($res){
+                return response()->json(['message' => 'comment deleted successfully'], Response::HTTP_OK);
+            }else{
+                return response()->json(['message' => 'comment not deleted correctly'], Response::HTTP_ERROR);
+            }
+        }else{
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+        }
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 use App\Models\Event;
-
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
+use App\Http\Controllers\ImageController;
 
 class EventController extends Controller
 {
@@ -15,7 +16,8 @@ class EventController extends Controller
     public function index()
     {
         $events = Event::All();
-        return $events;
+        return response()->json($events, Response::HTTP_OK);
+
     }
 
     /**
@@ -36,14 +38,38 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        $event = new Event();
-        $event->title = $request->title;
-        $event->description = $request->description;
-        $event->date = $request->date;
-        $event->id_user = $request->id_user;
-        $event->img = $request->img;
+        $request->validate([
+            'title' => 'required|min:3|max:50',
+            'description' => 'required',
+            'date' => 'required',
+            'image' => 'required'
+        ]);
 
-        $event->save();
+        $user = auth()->user();
+
+        if($user->id_role === 1){
+            $event = new Event();
+            $event->title = $request->title;
+            $event->description = $request->description;
+            $event->date = $request->date;
+            $event->id_user = $user->id;
+
+            $image = new ImageController();
+            $link = $image->decodeImg($request->image);
+            
+            $event->image = $link;
+
+            $res = $event->save();
+
+            if($res){
+                return response()->json(['message' => 'the event was saved successfully'],Response::HTTP_OK);
+            }else{
+                return response()->json(['message' => 'event not saved correctly'],Response::HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE);
+            }
+        }else{
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+        }
+
 
     }
 
@@ -55,7 +81,7 @@ class EventController extends Controller
      */
     public function show($id)
     {
-        //
+        
     }
 
     /**
@@ -76,17 +102,39 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Event $event)
     {
-        $event = Event::findOrFail($request->id);
-        $event->title = $request->title;
-        $event->description = $request->description;
-        $event->date = $request->date;
-        $event->id_user = $request->id_user;
-        $event->img = $request->img;
-        
-        $event->save();
-        return $event;
+        $request->validate([
+            'title' => 'required|min:3|max:50',
+            'description' => 'required',
+            'date' => 'required|date',
+        ]);
+
+        $user = auth()->user();
+
+        if($user->id_role === 1 ){
+
+            $event->title = $request->title;
+            $event->description = $request->description;
+            $event->date = $request->date;
+            $event->id_user = $user->id;
+            if($request->image){
+                $image = new ImageController();
+                $image->deleteEvent($event->image);
+
+                $link = $image->decodeImg($request->image);
+                $event->image = $link;
+            }
+
+            $res = $event->save();
+            if($res){
+                return response()->json(['message' => 'the event was updated successfully'],Response::HTTP_OK);
+            }else{
+                return response()->json(['message' => 'event not updated correctly'],Response::HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE);
+            }
+        }else{
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+        }
     }
 
     /**
@@ -95,9 +143,23 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Event $event)
     {
-        $event = Event::destroy($id);
-        return $event;
+        $user = auth()->user();
+
+        if($user->id_role){
+            $image = new ImageController();
+            $res = $image->deleteEvent($event->image);
+            if($res){
+                $res = $event->delete();
+                if($res){
+                    return response()->json(['message'=>'event deleted'], Response::HTTP_OK);
+                }else{
+                    return response()->json(['message'=>'event not deleted correctly'], Response::HTTP_ERROR);
+                }
+            }
+        }else{
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+        }
     }
 }

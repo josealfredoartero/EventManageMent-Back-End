@@ -31,7 +31,7 @@ class CommentPublicationController extends Controller
         if($user){
             $comment = new Comment_Publication();
 
-            $comment->description = $request->desciption;
+            $comment->description = $request->description;
             $comment->id_publication = $request->id_publication;
             $comment->id_user = $user->id;
 
@@ -78,18 +78,18 @@ class CommentPublicationController extends Controller
      * @param  \App\Models\Comment_Publication  $comment_Publication
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Comment_Publication $comment_Publication)
+    public function update(Request $request,  $id)
     {
         $request->validate([
             'description'=>'required'
         ]);
 
         $user = auth()->user();
+        $comment = Comment_Publication::findOrFail($id);
+        if($user->id === $comment->id_user){
+            $comment->description = $request->description;
 
-        if($user->id === $comment_Publication->id_user){
-            $comment_Publication->desciption = $request->description;
-
-            $res = $comment_Publication->save();
+            $res = $comment->save();
 
             if($res){
                 return response()->json(['message'=>'comment updated successfully'],Response::HTTP_OK);
@@ -97,7 +97,7 @@ class CommentPublicationController extends Controller
                 return response()->json(['message'=>'comment not updated correctly'],Response::HTTP_ERROR);
             }
         }else{
-            return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
     }
 
@@ -107,13 +107,13 @@ class CommentPublicationController extends Controller
      * @param  \App\Models\Comment_Publication  $comment_Publication
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Comment_Publication $comment_Publication)
+    public function destroy($id)
     {
+        $comment = Comment_Publication::findOrFail($id);
         $user = auth()->user();
+        if($user->id === $comment->id_user){
 
-        if($user->id === $comment_Publication->id_user){
-
-            $res = $comment_Publication->delete();
+            $res = $comment->delete();
     
             if($res){
                return response()->json(['message'=>'comment deleted successfully'],Response::HTTP_OK);
@@ -121,7 +121,7 @@ class CommentPublicationController extends Controller
                 return response()->json(['message'=>'comment not deleted correctly'],Response::HTTP_ERROR);
             }
         }else{
-            return response()->json(['menssaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
     }
 }
