@@ -38,6 +38,7 @@ Route::group(['middleware' => ['cors']], function() {
     Route::get('publication/comments/{id}', [PublicationController::class, 'commentsByPublication']);
 
     Route::get('publication', [PublicationController::class, 'index']);
+    Route::get('publication/{id}', [PublicationController::class, 'show']);
 
     Route::get('events', [EventController::class, 'index']);
 

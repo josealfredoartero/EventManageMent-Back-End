@@ -19,12 +19,12 @@ class PublicationController extends Controller
     public function index()
     {
         //Query for all publications
-        $publications = Publication::all();
+        $publications = Publication::select("publications.*", "users.name")->join("users", "users.id", "=", "publications.id_user")->orderBy("created_at",'DESC')->get();
 
         //Touring publications array for inserting images by publication
         foreach($publications as $publication){
             //Query for all image where "id_publication"
-            $publication->images = Image::all()->where('id_publication',$publication->id);
+            $publication->images = Image::select()->where('id_publication',$publication->id)->get();
         }
 
         //Returning publication with their images
@@ -75,8 +75,9 @@ class PublicationController extends Controller
      * @param  \App\Models\Publication  $publication
      * @return \Illuminate\Http\Response
      */
-    public function show(Publication $publication)
+    public function show($id)
     {
+        $publication = Publication::findOrFail($id);
         //Query for all image where "id_publication"
         $publication->images = Image::where('id_publication', $publication->id)->get();
 
@@ -146,12 +147,22 @@ class PublicationController extends Controller
      */
     public function destroy(Publication $publication)
     {
-        $image = new ImageController();
-        $image->destroy($publication->id);
-
-        $publication->delete();
-
-        return response()->json(['message'=>'publication deleted successfully'], Response::HTTP_OK);
+        //Getting user data by token
+        $user = auth()->user();
+        //Validate if user is admin
+        if($user->id_role === 1){
+            
+            $image = new ImageController();
+            // delete all images from publication
+            $image->destroy($publication->id);
+            // delete publication
+            $publication->delete();
+            // return response
+            return response()->json(['message'=>'publication deleted successfully'], Response::HTTP_OK);
+        }else{
+            //Returning if user isn't admin
+            return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     //Method to bring comments to a publication
@@ -162,5 +173,12 @@ class PublicationController extends Controller
         $comments = $comment->comments($id);
         //Return publication comments
         return response()->json($comments, Response::HTTP_OK);
+    }
+
+    public function last()
+    {
+        $publications = Publication::latest()
+        ->take(5)
+        ->get();
     }
 }
