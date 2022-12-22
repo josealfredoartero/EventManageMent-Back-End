@@ -17,7 +17,7 @@ class EventController extends Controller
     public function index()
     {
         //Query for all events
-        $events = Event::All();
+        $events = Event::select()->orderBy('created_at',"DESC")->get();
 
         //Return of all events
         return response()->json($events, Response::HTTP_OK);
@@ -188,5 +188,12 @@ class EventController extends Controller
             //Returning if user isn't admin
             return response()->json(['messaje'=>"unauthorized user"],Response::HTTP_UNAUTHORIZED);;
         }
+    }
+
+    public function latest(){
+        $events = Event::latest()
+        ->take(3)
+        ->get();
+        return $events;
     }
 }

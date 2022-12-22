@@ -89,7 +89,8 @@ class CommentController extends Controller
     public function comments($id)
     {
         //Comments of an event
-        $comment = Comment::all()->where('id_event',$id);
+        $comment = Comment::select('comments.*','users.name as user')->where('id_event',$id)
+                    ->join('users', 'users.id','=','id_user')->orderBy('created_at', "DESC")->get();
         //Return comments
         return response()->json($comment,Response::HTTP_OK);
     }

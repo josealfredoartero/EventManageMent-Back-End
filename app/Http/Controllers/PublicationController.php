@@ -175,10 +175,18 @@ class PublicationController extends Controller
         return response()->json($comments, Response::HTTP_OK);
     }
 
-    public function last()
-    {
+    public function latest(){
         $publications = Publication::latest()
-        ->take(5)
+        ->take(3)
         ->get();
+
+        //Touring publications array for inserting images by publication
+        foreach($publications as $publication){
+            //Query for all image where "id_publication"
+            $publication->images = Image::select()->where('id_publication',$publication->id)->get();
+        }
+
+
+        return $publications;
     }
 }

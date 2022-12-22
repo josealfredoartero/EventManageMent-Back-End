@@ -69,7 +69,8 @@ class CommentPublicationController extends Controller
     public function comments($id)
     {
         //Query all comments by id_publication
-        $comments = Comment_Publication::all()->where('id_publication', $id);
+        $comments = Comment_Publication::select('comment__publications.*','users.name as user')->where('id_publication', $id)
+                    ->join('users', 'users.id','=','id_user')->orderBy('created_at','DESC')->get();
         //Return comments
         return $comments;
     }

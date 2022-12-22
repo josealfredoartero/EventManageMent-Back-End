@@ -36,12 +36,14 @@ Route::group(['middleware' => ['cors']], function() {
     });
     
     Route::get('publication/comments/{id}', [PublicationController::class, 'commentsByPublication']);
-
     Route::get('publication', [PublicationController::class, 'index']);
+    Route::get('publication/latest', [PublicationController::class, 'latest']);
     Route::get('publication/{id}', [PublicationController::class, 'show']);
 
-    Route::get('events', [EventController::class, 'index']);
 
+    Route::get('events', [EventController::class, 'index']);
+    Route::get('events/latest', [EventController::class, 'latest']);
+    Route::get('events/{id}', [EventController::class, 'show']);
     Route::get('/comments/{id}', [CommentController::class,'count']);
     Route::get('event/comments/{id}', [CommentController::class,'comments']);
 });
